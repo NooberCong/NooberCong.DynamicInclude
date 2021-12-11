@@ -5,7 +5,7 @@ DynamicInclude:
 
 	context.Owners.DynamicInclude("Pets.Foods")
 	
->DynamicInclude is case insensitive
+>DynamicInclude is **case-insensitive**
 
 	// Will also work
 	context.Owners.DynamicInclude("pets.foods")	
