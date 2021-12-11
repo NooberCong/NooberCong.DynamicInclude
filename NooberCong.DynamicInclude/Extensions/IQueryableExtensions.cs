@@ -23,8 +23,8 @@ public static class IQueryableExtensions
             foreach (var (type, propName, isCollection) in includePathSpecs)
             {
                 var includeMethod = isFirstInclude ? GetIncludeMethodInfo(typeof(T), propName) :
-                    prevCollection ? GetThenIncludeFromCollectionMethodInfo(typeof(T), prevType, propName) :
-                    GetThenIncludeMethodInfo(typeof(T), prevType, propName);
+                    prevCollection ? GetThenIncludeAfterEnumerableMethodInfo(typeof(T), prevType, propName) :
+                    GetThenIncludeAfterReferenceMethodInfo(typeof(T), prevType, propName);
 
                 curQuery = includeMethod.Invoke(null,
                     new object[] {curQuery, GenerateGetterExpression(prevType, propName)});
@@ -89,7 +89,7 @@ public static class IQueryableExtensions
 
     private static PropertyInfo? FindInstancePropertyByNameIgnoreCase(Type entityType, string propName)
     {
-        return entityType.GetProperty(propName, BindingFlags.Instance | BindingFlags.IgnoreCase);
+        return entityType.GetProperty(propName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase);
     }
 
     private static ICollection<IEnumerable<string>> ParseAbsoluteIncludePaths(string expr,
@@ -180,40 +180,43 @@ public static class IQueryableExtensions
             objParameterExpr);
     }
 
-    public static MethodInfo GetIncludeMethodInfo(Type entityType, string propertyName)
+    private static MethodInfo GetIncludeMethodInfo(Type entityType, string propertyName)
     {
         var propInfo = entityType.GetProperty(propertyName);
 
-        return typeof(EntityFrameworkQueryableExtensions).GetMethods().SingleOrDefault(m =>
-                m.Name == "Include" &&
-                m.GetGenericArguments().Length == 2 &&
-                m.GetParameters().Length == 2 &&
-                m.GetParameters()[1].ParameterType.IsAssignableTo(typeof(Expression)))
-            ?.MakeGenericMethod(entityType, propInfo.PropertyType);
+        return typeof(EntityFrameworkQueryableExtensions)
+            .GetTypeInfo().GetDeclaredMethods(nameof(EntityFrameworkQueryableExtensions.Include))
+            .Single(
+                mi =>
+                    mi.GetGenericArguments().Count() == 2
+                    && mi.GetParameters().Any(
+                        pi => pi.Name == "navigationPropertyPath" && pi.ParameterType != typeof(string)))
+            .MakeGenericMethod(entityType, propInfo.PropertyType);
     }
 
-    public static MethodInfo GetThenIncludeMethodInfo(Type entityType, Type previousType, string propertyName)
-    {
-        var propInfo = previousType.GetProperty(propertyName);
-
-        return typeof(EntityFrameworkQueryableExtensions).GetMethods().SingleOrDefault(m =>
-                m.Name == "ThenInclude" &&
-                m.GetGenericArguments().Length == 3 &&
-                m.GetParameters().Length == 2 &&
-                !m.GetParameters()[0].ParameterType.GenericTypeArguments[1].IsAssignableTo(typeof(IEnumerable)))
-            ?.MakeGenericMethod(entityType, previousType, propInfo.PropertyType);
-    }
-
-    public static MethodInfo GetThenIncludeFromCollectionMethodInfo(Type entityType, Type previousType,
+    private static MethodInfo GetThenIncludeAfterReferenceMethodInfo(Type entityType, Type previousType,
         string propertyName)
     {
         var propInfo = previousType.GetProperty(propertyName);
 
-        return typeof(EntityFrameworkQueryableExtensions).GetMethods().SingleOrDefault(m =>
-                m.Name == "ThenInclude" &&
-                m.GetGenericArguments().Length == 3 &&
-                m.GetParameters().Length == 2 &&
-                m.GetParameters()[0].ParameterType.GenericTypeArguments[1].IsAssignableTo(typeof(IEnumerable)))
-            ?.MakeGenericMethod(entityType, previousType, propInfo.PropertyType);
+        return typeof(EntityFrameworkQueryableExtensions)
+            .GetTypeInfo().GetDeclaredMethods(nameof(EntityFrameworkQueryableExtensions.ThenInclude))
+            .Single(
+                mi => mi.GetGenericArguments().Count() == 3
+                      && mi.GetParameters()[0].ParameterType.GenericTypeArguments[1].IsGenericParameter)
+            .MakeGenericMethod(entityType, previousType, propInfo.PropertyType);
+    }
+
+    private static MethodInfo GetThenIncludeAfterEnumerableMethodInfo(Type entityType, Type previousType,
+        string propertyName)
+    {
+        var propInfo = previousType.GetProperty(propertyName);
+
+        return typeof(EntityFrameworkQueryableExtensions)
+            .GetTypeInfo().GetDeclaredMethods(nameof(EntityFrameworkQueryableExtensions.ThenInclude))
+            .Single(
+                mi => mi.GetGenericArguments().Count() == 3
+                      && mi.GetParameters()[0].ParameterType.GenericTypeArguments[1].IsGenericParameter)
+            .MakeGenericMethod(entityType, previousType, propInfo.PropertyType);
     }
 }
