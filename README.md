@@ -3,12 +3,13 @@
 ## Simple use case
 DynamicInclude:
 
-	context.Owners.Include("Pets.Foods")
+	context.Owners.DynamicInclude("Pets.Foods")
 	
-	Or if you worry about name changes
-	
-	context.Owners.Include($"{nameof(Owner.Pets)}.{nameof(Pet.Foods)}")
+>DynamicInclude is Case insensitive
 
+	// Will also work
+	context.Owners.DynamicInclude("pets.foods")	
+	
 	
 Normal EF Core Equivalent:
 
@@ -18,11 +19,11 @@ Normal EF Core Equivalent:
 
 ## Deep nested multiple includes (however deep you want)
 
->If you have performance issues, add AsSplitQuery() before using dynamicInclude
+>If you experience performance issues, consider adding AsSplitQuery() to query
 
 DynamicInclude:
 
-	context.Owners.Include("Pets.(Snacks, Toys.Manufacturer)")
+	context.Owners.DynamicInclude("Pets.(Snacks, Toys.Manufacturer)")
 
 Normal EF Core Equivalent:
 
