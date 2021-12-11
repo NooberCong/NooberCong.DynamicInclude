@@ -5,6 +5,11 @@ DynamicInclude:
 
 	context.Owners.Include("Pets.Foods")
 	
+	Or if you worry about name changes
+	
+	context.Owners.Include($"{nameof(Owner.Pets)}.{nameof(Pet.Foods)}")
+
+	
 Normal EF Core Equivalent:
 
 	context.Owners
