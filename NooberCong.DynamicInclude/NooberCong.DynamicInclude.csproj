@@ -5,17 +5,17 @@
     <Nullable>enable</Nullable>
     <LangVersion>10</LangVersion>
     <Title>NooberCong.DynamicInclude</Title>
-    <Description>Add Includes to EF Core DbSet dynamically with support for deep nested includes</Description>
-    <PackageTags>EF Core Include</PackageTags>
+    <Description>Add Includes to Queryable dynamically with support for ordering, skip and take</Description>
+    <PackageTags>EF Core Include OrderBy Skip Take Queryable Dynamic</PackageTags>
     <TargetFramework>net5.0</TargetFramework>
     <AssemblyName>NooberCong.DynamicInclude</AssemblyName>
     <RootNamespace>NooberCong.DynamicInclude</RootNamespace>
     <Authors>NooberCong</Authors>
     <PackageLicenseUrl>https://licenses.nuget.org/MIT</PackageLicenseUrl>
-    <PackageIconUrl>https://i.ibb.co/ry6FKXB/leaves.png</PackageIconUrl>
+    <PackageIconUrl>https://i.ibb.co/5LrqCPQ/diagram.png</PackageIconUrl>
     <PackageProjectUrl>https://github.com/NooberCong/NooberCong.DynamicInclude</PackageProjectUrl>
     <RepositoryUrl>https://github.com/NooberCong/NooberCong.DynamicInclude</RepositoryUrl>
-    <PackageVersion>1.0.3</PackageVersion>
+    <PackageVersion>1.1.0</PackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
